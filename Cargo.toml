@@ -1,0 +1,16 @@
+[package]
+name = "libssh-sys"
+version = "0.1.0"
+authors = ["Josh Stone <jistone@redhat.com>"]
+links = "ssh"
+build = "build.rs"
+license = "MIT/Apache-2.0"
+repository = "https://github.com/cuviper/ssh-rs"
+description = "FFI bindings for libssh"
+edition = "2018"
+
+[lib]
+doctest = false
+
+[build-dependencies]
+pkg-config = "0.3.16"
