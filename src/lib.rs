@@ -1,6 +1,8 @@
 #![allow(non_camel_case_types)]
 
-use std::os::raw::{c_char, c_int, c_void};
+pub use libc::size_t;
+
+use std::os::raw::{c_char, c_int, c_uchar, c_void};
 
 // Error return codes
 pub const SSH_OK: c_int = 0;
@@ -11,6 +13,22 @@ pub const SSH_EOF: c_int = -127;
 pub enum ssh_session_struct {}
 pub type ssh_session = *mut ssh_session_struct;
 
+pub type ssh_auth_e = c_int;
+pub const SSH_AUTH_SUCCESS: ssh_auth_e = 0;
+pub const SSH_AUTH_DENIED: ssh_auth_e = 1;
+pub const SSH_AUTH_PARTIAL: ssh_auth_e = 2;
+pub const SSH_AUTH_INFO: ssh_auth_e = 3;
+pub const SSH_AUTH_AGAIN: ssh_auth_e = 4;
+pub const SSH_AUTH_ERROR: ssh_auth_e = -1;
+
+pub type ssh_known_hosts_e = c_int;
+pub const SSH_KNOWN_HOSTS_ERROR: ssh_known_hosts_e = -2;
+pub const SSH_KNOWN_HOSTS_NOT_FOUND: ssh_known_hosts_e = -1;
+pub const SSH_KNOWN_HOSTS_UNKNOWN: ssh_known_hosts_e = 0;
+pub const SSH_KNOWN_HOSTS_OK: ssh_known_hosts_e = 1;
+pub const SSH_KNOWN_HOSTS_CHANGED: ssh_known_hosts_e = 2;
+pub const SSH_KNOWN_HOSTS_OTHER: ssh_known_hosts_e = 3;
+
 extern "C" {
     pub fn ssh_new() -> ssh_session;
     pub fn ssh_connect(session: ssh_session) -> c_int;
@@ -18,6 +36,14 @@ extern "C" {
     pub fn ssh_free(session: ssh_session);
 
     pub fn ssh_get_error(error: *mut c_void) -> *const c_char;
+    pub fn ssh_is_blocking(session: ssh_session) -> c_int;
+    pub fn ssh_session_has_known_hosts_entry(session: ssh_session) -> ssh_known_hosts_e;
+    pub fn ssh_set_blocking(session: ssh_session, blocking: c_int);
+    pub fn ssh_userauth_password(
+        session: ssh_session,
+        username: *const c_char,
+        password: *const c_char,
+    ) -> c_int;
 }
 
 pub type ssh_options_e = c_int;
@@ -80,4 +106,25 @@ extern "C" {
         type_: ssh_options_e,
         value: *const c_void,
     ) -> c_int;
+}
+
+pub enum ssh_key_struct {}
+pub type ssh_key = *mut ssh_key_struct;
+
+pub type ssh_publickey_hash_type_e = c_int;
+pub const SSH_PUBLICKEY_HASH_SHA1: ssh_publickey_hash_type_e = 0;
+pub const SSH_PUBLICKEY_HASH_MD5: ssh_publickey_hash_type_e = 1;
+pub const SSH_PUBLICKEY_HASH_SHA256: ssh_publickey_hash_type_e = 2;
+
+// Public key related functions
+extern "C" {
+    pub fn ssh_clean_pubkey_hash(hash: *mut *mut c_uchar);
+    pub fn ssh_key_free(key: ssh_key);
+    pub fn ssh_get_publickey_hash(
+        key: ssh_key,
+        type_: ssh_publickey_hash_type_e,
+        hash: *mut *mut c_uchar,
+        hlen: *mut size_t,
+    ) -> c_int;
+    pub fn ssh_get_server_publickey(session: ssh_session, key: *mut ssh_key) -> c_int;
 }
