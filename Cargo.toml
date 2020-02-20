@@ -12,5 +12,8 @@ edition = "2018"
 [lib]
 doctest = false
 
+[dependencies]
+libc = { default-features = false, version = "0.2" }
+
 [build-dependencies]
 pkg-config = "0.3.16"
